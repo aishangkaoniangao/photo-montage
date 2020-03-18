@@ -28,7 +28,6 @@ class images{
      * @date 2020-03-18
      */
     public function init(){
-        $this->dst_im = null;
         $this->allow = 10;
         $this->o_w = 0;
         $this->o_h = 0;
@@ -48,23 +47,25 @@ class images{
      */
     public function run($rootPath="./"){
         $dirs = scandir($rootPath);
+        foreach($dirs as $key => $value){
+            if(in_array($value,$this->ignore)){
+                unset($dirs[$key]);
+            }
+        }
         asort($dirs, SORT_STRING | SORT_FLAG_CASE | SORT_NATURAL);
         if(!empty($dirs)){
-            $i = $j = 0;
+            $i = 1;
+            $j = $n = 0;
             $tmp = array();
             foreach($dirs as $key => $value){
-                if(in_array($value,$this->ignore)){
-                    unset($dirs[$key]);
-                    continue;
-                }
-
                 if(is_dir($rootPath."/".$value)){
                     $this->run($rootPath."/".$value);
                 }else{
+                    $n++;
                     $num = count($dirs);
                     $filename_pre = $rootPath."t";
-                    if($i > $this->allow || $key == ($num-1)){
-                        $i = 0;
+                    if($i >= $this->allow || $n >= $num){
+                        $i = 1;
                         $j++;
                         $tmp[] = $rootPath."/".$value;
                         !is_dir($filename_pre) && mkdir($filename_pre,777,true);
@@ -91,23 +92,24 @@ class images{
      */
     public function tiny($arr,$new_filename){
         $width = $height = 0;
+        $dst_img = null;
         foreach($arr as $key=>$value){
             list($width, $height) = getimagesize($value);
-            $this->all_h += $height;
+            if($key != 0)
+                $this->all_h += $height;
         }
         foreach($arr as $key=>$value){
             if($key == 0){
                 list($this->all_w, $src_h) = getimagesize($value);
-                list($this->dst_im,$this->o_w,$this->o_h) = $this->scale($value,$this->all_w,$this->all_h);
+                list($dst_img,$this->o_w,$this->o_h) = $this->scale($value,$this->all_w,$this->all_h);
             }else{
                 list($r,$width,$height) = $this->scale($value,$this->all_w);
-                $this->dst_im = $this->mongage($this->dst_im,$r,$this->o_w,$this->o_h,$width,$height);
+                $dst_img = $this->mongage($dst_img,$r,$this->o_w,$this->o_h,$width,$height);
                 $this->o_w = $width;
                 $this->o_h += $height;
             }
         }
-        $this->jpeg($this->dst_im,$new_filename);
-        imagedestroy($this->dst_im);
+        $this->jpeg($dst_img,$new_filename);
         $this->init();
     }
 
