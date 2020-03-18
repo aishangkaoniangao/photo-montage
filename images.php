@@ -1,23 +1,51 @@
 <?php
+/**
+ *
+ * 拼接本地图片
+ * @author wangzhuang
+ * @date 2020-03-18
+ *
+ */
+
 ini_set('memory_limit', '1024M');
 
 class images{
-    public $tmp = __DIR__."/tmp/";
-    public $dst_im = null;
-    public $o_w = 0;
-    public $o_h = 0;
-    public $all_w = 0;
-    public $all_h = 0;
-    public $ignore = array(
-        '.',
-        '..',
-        '.DS_Store',
-    );
+    public $dst_im;
+    public $allow;
+    public $o_w;
+    public $o_h;
+    public $all_w;
+    public $all_h;
+    public $ignore;
 
     public function __construct(){
-
+        $this->init();
     }
 
+    /**
+     * 初始化
+     * @author wangzhuang
+     * @date 2020-03-18
+     */
+    public function init(){
+        $this->dst_im = null;
+        $this->allow = 10;
+        $this->o_w = 0;
+        $this->o_h = 0;
+        $this->all_w = 0;
+        $this->all_h = 0;
+        $this->ignore = array(
+            '.',
+            '..',
+            '.DS_Store',
+        );
+    }
+
+    /**
+     * @param string $rootPath 默认当前目录
+     * @author wangzhuang
+     * @date 2020-03-18
+     */
     public function run($rootPath="./"){
         $dirs = scandir($rootPath);
         asort($dirs, SORT_STRING | SORT_FLAG_CASE | SORT_NATURAL);
@@ -35,7 +63,7 @@ class images{
                 }else{
                     $num = count($dirs);
                     $filename_pre = $rootPath."t";
-                    if($i > 10 || $key == ($num-1)){
+                    if($i > $this->allow || $key == ($num-1)){
                         $i = 0;
                         $j++;
                         $tmp[] = $rootPath."/".$value;
@@ -54,6 +82,13 @@ class images{
         }
     }
 
+    /**
+     * 分组拼接防止合成的图片过大
+     * @param $arr
+     * @param $new_filename
+     * @author wangzhuang
+     * @date 2020-03-18
+     */
     public function tiny($arr,$new_filename){
         $width = $height = 0;
         foreach($arr as $key=>$value){
@@ -73,11 +108,7 @@ class images{
         }
         $this->jpeg($this->dst_im,$new_filename);
         imagedestroy($this->dst_im);
-        $this->dst_im = null;
-        $this->o_w = 0;
-        $this->o_h = 0;
-        $this->all_w = 0;
-        $this->all_h = 0;
+        $this->init();
     }
 
     //等比缩放
@@ -108,7 +139,18 @@ class images{
         return array($dst_img,$dst_w,$dst_h);
     }
 
-    //上下拼接
+    /**
+     * 拼接
+     * @param $o
+     * @param $source
+     * @param $o_w
+     * @param $o_h
+     * @param $width
+     * @param $height
+     * @return mixed
+     * @author wangzhuang
+     * @date 2020-03-18
+     */
     public function mongage($o,$source,$o_w,$o_h,$width,$height){
         $source = is_resource($source) ? $source : Imagecreatefromjpeg($source);
         imagecopy($o, $source, 0, $o_h, 0, 0, $width, $height);
@@ -117,25 +159,19 @@ class images{
         return $o;
     }
 
-    //输出合并后水印图片
+    /**
+     * 输出图片
+     * @param $img
+     * @param $filename
+     * @author wangzhuang
+     * @date 2020-03-18
+     */
     public function jpeg($img,$filename){
         imagejpeg($img,$filename);
+        imagedestroy($img);
     }
 
     public function __destruct(){
-        $this->dst_im && imagedestroy($this->dst_im);
+        
     }
 }
-
-$images = new images();
-$rpath = array(
-    "./images/8763",
-    "./images/8207",
-    "./images/8681",
-    "./images/9189",
-    "./images/8775",
-);
-foreach($rpath as $value){
-    $images->run($value);
-}
-exit("执行结束".PHP_EOL);
