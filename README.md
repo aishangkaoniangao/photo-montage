@@ -1,1 +1,1 @@
-composer require aishangkaoniangao/photo-montage dev-master
+    composer require aishangkaoniangao/photo-montage dev-master
