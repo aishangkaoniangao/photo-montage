@@ -2,7 +2,7 @@
   "name":"aishangkaoniangao/photomontage",
   "autoload": {
     "psr-4": {
-      "aishangkaoniangao\\photomontage\\": "aishangkaoniangao/photomontage"
+      "aishangkaoniangao\\photomontage\\": ""
     }
   }
 }
