@@ -7,7 +7,7 @@
  *
  */
 
-namespace images;
+namespace aishangkaoniangao\photomontage\images;
 
 ini_set('memory_limit', '1024M');
 class images{
